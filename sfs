@@ -1,89 +1,128 @@
-local TweenService = game:GetService("TweenService")
-local Players = game:GetService("Players")
+getgenv().WebhookURL = ""
+getgenv().UserID = ""
+getgenv().targetrank = 20
+getgenv().HideUI = true
+getgenv().UI_CLOSED = true
+getgenv().ShowUI = false
+getgenv().Config = {             
+    ["auto rank"] = true,               -- true/false
+    ["farm method"] = {
+        ["Enable"] = true, 
+        ["Method"] = "fastfarm"         -- fastfarm/infpetspeed
+    }, 
+    ["auto click"] = true,              
+    ["auto collect"] = true,            
+    ["auto ultimate"] = true,           
+    ["auto hide egg"] = true,           
+    ["auto buy equip slot"] = {["Enable"] = true, ["Amount"] = 99},          
+    ["auto buy egg slot"] = {["Enable"] = true, ["Amount"] = 99},     
+    ["auto claim mailbox"] = true,      
 
-local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
-
-local gui = Instance.new("ScreenGui")
-gui.Name = "TransitionUI"
-gui.ResetOnSpawn = false
-gui.IgnoreGuiInset = true
-gui.Parent = PlayerGui
-
--- Nền đen
-local black = Instance.new("Frame")
-black.Parent = gui
-black.Size = UDim2.new(1,0,1,0)
-black.BackgroundColor3 = Color3.new(0,0,0)
-black.BackgroundTransparency = 1
-black.BorderSizePixel = 0
-
--- Chữ chạy
-local text = Instance.new("TextLabel")
-text.Parent = gui
-text.BackgroundTransparency = 1
-text.Size = UDim2.new(0,900,0,45)
-text.AnchorPoint = Vector2.new(0.5,0.5)
-text.Position = UDim2.new(-0.6,0,0.5,0)
-text.Font = Enum.Font.GothamBold
-text.TextSize = 30
-text.TextStrokeTransparency = 0
-text.TextStrokeColor3 = Color3.new(0,0,0)
-text.Visible = false
-
--- Chữ đổi màu cầu vồng
-task.spawn(function()
-	local hue = 0
-	while true do
-		hue = (hue + 0.005) % 1
-		text.TextColor3 = Color3.fromHSV(hue,1,1)
-		task.wait(0.03)
-	end
-end)
-
-local messages = {
-	"CHUC BAN CHOI GAME VUI VE",
-	"SCRIPT DANG HOAT DONG",
-	"━━━━━━━━━━━━━━━━━━━━",
-	"CREDIT: MINH DEO GAY",
-	"━━━━━━━━━━━━━━━━━━━━",
-	"CAM ON BAN DA SU DUNG SCRIPT"
+    -- E.g enchant: "Coins", "Diamonds", "Criticals", "Strong Pets", "Lucky Eggs", "Treasure Hunter", "Magnet", "Speed", "Tap Power"
+    ["Enchant"] = {
+        ["Slot 1"] = "",
+        ["Slot 2"] = "",
+        ["Slot 3"] = "",
+        ["Slot 4"] = "",
+        ["Slot 5"] = "",
+        ["Slot 6"] = "",
+        ["Slot 7"] = "",
+        ["Slot 8"] = "",
+        ["Slot 9"] = "",
+    }
 }
 
-while true do
-	-- Fade nền đen
-	TweenService:Create(
-		black,
-		TweenInfo.new(0.5),
-		{BackgroundTransparency = 0}
-	):Play()
+getgenv().RankQuestConfig = {
+    ["Legendary Offset"] = -1,    -- Value: 0, -1, -2, -3,e.g:-1 =best egg-1
+    ["Comet"] = true,
+    ["Jar"] = true,
+    ["Pinata"] = true,
+    ["Lucky"] = true,
+    ["Flag"] = true,
+    ["Fruit"] = true,
+    ["Potion"] = true,
+    ["Area"] = true,
+    ["UpPotion"] = true,
+    ["UpEnchant"] = true,
+    ["Hatch"] = true,
+    ["Gold"] = true,
+    ["Rainbow"] = true,
+    ["Legendary"] = true
+}
 
-	task.wait(0.6)
+getgenv().rankareaconfig = {
+    ["areaconfig"] = false,
+    ["rank 1"] = 8,
+    ["rank 2"] = 16,
+    ["rank 6"] = 279
+}
 
-	text.Visible = true
+getgenv().SCRIPT_KEY = "6ec87a3d-59f5-4e6e-ae63-ae073a938774"
+loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/4a0cd73a061e507694b1ad7a1f795dcda70aad83c22744055931169d9daa9845/download"))()
 
-	for _,msg in ipairs(messages) do
-		text.Text = msg
-		text.Position = UDim2.new(-0.6,0,0.5,0)
+-- Load script GitHub trước
+pcall(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/mme1212012-boop/-dasda2314/refs/heads/main/sfs"))()
+end)
 
-		local move = TweenService:Create(
-			text,
-			TweenInfo.new(6,Enum.EasingStyle.Linear),
-			{Position = UDim2.new(1.6,0,0.5,0)}
-		)
+task.wait(5)
 
-		move:Play()
-		move.Completed:Wait()
-		task.wait(0.3)
-	end
+getgenv().WebhookURL = ""
+getgenv().UserID = ""
+getgenv().targetrank = 20
 
-	text.Visible = false
+getgenv().Config = {             
+    ["auto rank"] = true,
+    ["farm method"] = {
+        ["Enable"] = true,
+        ["Method"] = "fastfarm"
+    },
+    ["auto click"] = true,
+    ["auto collect"] = true,
+    ["auto ultimate"] = true,
+    ["auto hide egg"] = true,
+    ["auto buy equip slot"] = {["Enable"] = true, ["Amount"] = 99},
+    ["auto buy egg slot"] = {["Enable"] = true, ["Amount"] = 99},
+    ["auto claim mailbox"] = true,
 
-	-- Fade về trong suốt
-	TweenService:Create(
-		black,
-		TweenInfo.new(0.5),
-		{BackgroundTransparency = 1}
-	):Play()
+    ["Enchant"] = {
+        ["Slot 1"] = "",
+        ["Slot 2"] = "",
+        ["Slot 3"] = "",
+        ["Slot 4"] = "",
+        ["Slot 5"] = "",
+        ["Slot 6"] = "",
+        ["Slot 7"] = "",
+        ["Slot 8"] = "",
+        ["Slot 9"] = "",
+    }
+}
 
-	task.wait(300) -- 5 phút
-end
+getgenv().RankQuestConfig = {
+    ["Legendary Offset"] = -1,
+    ["Comet"] = true,
+    ["Jar"] = true,
+    ["Pinata"] = true,
+    ["Lucky"] = true,
+    ["Flag"] = true,
+    ["Fruit"] = true,
+    ["Potion"] = true,
+    ["Area"] = true,
+    ["UpPotion"] = true,
+    ["UpEnchant"] = true,
+    ["Hatch"] = true,
+    ["Gold"] = true,
+    ["Rainbow"] = true,
+    ["Legendary"] = true
+}
+
+getgenv().rankareaconfig = {
+    ["areaconfig"] = true,
+    ["rank 1"] = 8,
+    ["rank 2"] = 16,
+    ["rank 6"] = 279
+}
+
+getgenv().SCRIPT_KEY = "6ec87a3d-59f5-4e6e-ae63-ae073a938774"
+print("akuma béo")
+loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/4a0cd73a061e507694b1ad7a1f795dcda70aad83c22744055931169d9daa9845/download"))()
