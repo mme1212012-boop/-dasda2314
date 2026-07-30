@@ -54,7 +54,7 @@ getgenv().RankQuestConfig = {
 }
 
 getgenv().rankareaconfig = {
-    ["areaconfig"] = false,
+    ["areaconfig"] = true,
     ["rank 1"] = 8,
     ["rank 2"] = 16,
     ["rank 6"] = 279
