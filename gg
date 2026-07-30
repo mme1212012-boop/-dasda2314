@@ -1,149 +1,89 @@
-getgenv().Key = "adc061c11da9ebe5f53e1010" 
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
 
-getgenv().Config = {
-    ["Max Plant Fruit"] = 99999,
-    ["Buy Expand Plot"] = true,
-	["Buy Slot Pet"] = true,
-    ["Pet"] = {
-        ["Auto Buy"] = {
-            ["Enable"] = true,
-            ["Pet"] = {
-                ["IceSerpent"]      = true,   -- $20M
-                ["Raccoon"]         = true,   -- $5M
-                ["Unicorn"]         = true,   -- $4M
-                ["GoldenDragonfly"] = true,   -- $3M
-                ["BlackDragon"]     = true,   -- $1M
-                ["Monkey"]          = true,   -- $1M
-                ["Bee"]             = true,   -- $1M
-                ["Robin"]           = true,   -- $75K
-                ["Deer"]            = false,  -- $50K
-                ["Owl"]             = false,  -- $25K
-                ["Bunny"]           = false,  -- $20K
-                ["Frog"]            = false,  -- $10K
-            },
-        },
-    },
-    ["Mail"] = {
-        ["Enable"]      = false,
-        ["Username"]    = "",
-        ["Note"]        = "auto-shipped from main",
-        ["IntervalSec"] = 30,
-        ["Pet"] = {
-            ["IceSerpent"]      = false,
-            ["Raccoon"]         = false,
-            ["Unicorn"]         = false,
-            ["GoldenDragonfly"] = false,
-            ["BlackDragon"]     = false,
-            ["Monkey"]          = false,
-            ["Bee"]             = false,
-            ["Robin"]           = false,
-            ["Deer"]            = false,
-            ["Owl"]             = false,
-            ["Bunny"]           = false,
-            ["Frog"]            = false,
-        },
-        ["Seed"] = {
-            ["Rainbow"] = false,
-            ["Gold"]    = false,
-        },
-    },
-    ["Plant Seed"] = {
-        ["Enable"] = false,
-        ["Seed"] = {
-            ["Bamboo"]          = true,   -- $10
-            ["Blueberry"]       = true,   -- $25
-            ["Tulip"]           = true,   -- $40
-            ["Apple"]           = true,   -- $50
-            ["Tomato"]          = true,   -- $200
-            ["Banana"]          = true,   -- $1K
-            ["Sunflower"]       = true,   -- $1K
-            ["Corn"]            = true,   -- $2.5K
-            ["Mushroom"]        = true,   -- $15K
-            ["Cherry"]          = true,   -- $30K
-            ["Mango"]           = true,   -- $35K
-            ["Grape"]           = true,   -- $50K
-            ["Coconut"]         = true,   -- $70K
-            ["Cactus"]          = true,   -- $100K
-            ["Baby Cactus"]     = true,   -- $100K
-            ["Pomegranate"]     = true,   -- $200K
-            ["Pineapple"]       = true,   -- $250K
-            ["Dragon Fruit"]    = true,   -- $500K
-            ["Poison Apple"]    = true,   -- $1M
-            ["Moon Bloom"]      = true,   -- $1M
-            ["Poison Ivy"]      = true,   -- $1M
-            ["Ghost Pepper"]    = true,   -- $1M
-            ["Venus Fly Trap"]  = true,   -- $5M
-            ["Dragon's Breath"] = true,   -- $10M
-        },
-    },
-    ["Buy Seed"] = {
-        ["Enable"] = true,
-        ["Seed"] = {
-            ["Bamboo"]          = true,   -- $10
-            ["Blueberry"]       = true,   -- $25
-            ["Tulip"]           = true,   -- $40
-            ["Apple"]           = true,   -- $50
-            ["Tomato"]          = true,   -- $200
-            ["Banana"]          = true,   -- $1K
-            ["Sunflower"]       = true,   -- $1K
-            ["Corn"]            = true,   -- $2.5K
-            ["Mushroom"]        = true,   -- $15K
-            ["Cherry"]          = true,   -- $30K
-            ["Mango"]           = true,   -- $35K
-            ["Grape"]           = true,   -- $50K
-            ["Coconut"]         = true,   -- $70K
-            ["Cactus"]          = true,   -- $100K
-            ["Baby Cactus"]     = true,   -- $100K
-            ["Pomegranate"]     = true,   -- $200K
-            ["Pineapple"]       = true,   -- $250K
-            ["Dragon Fruit"]    = true,   -- $500K
-            ["Poison Apple"]    = true,   -- $1M
-            ["Moon Bloom"]      = true,   -- $1M
-            ["Poison Ivy"]      = true,   -- $1M
-            ["Ghost Pepper"]    = true,   -- $1M
-            ["Venus Fly Trap"]  = true,   -- $5M
-            ["Dragon's Breath"] = true,   -- $10M
-        },
-    },
-    
-    ["Buy Gear"] = {
-        ["Enable"] = false,
-        ["Gear"] = {
-            ["Common Watering Can"]  = true,   -- $2K
-            ["Super Watering Can"]   = true,   -- $250K
-            ["Common Sprinkler"]     = true,   -- $3K
-            ["Uncommon Sprinkler"]   = true,   -- $10K
-            ["Rare Sprinkler"]       = true,   -- $50K
-            ["Legendary Sprinkler"]  = true,   -- $100K
-            ["Super Sprinkler"]      = true,   -- $300K
-        },
-    },
-    ["Auto Water"] = {
-        ["Enable"] = false,
-    },
-    ["Auto Sprinkler"] = {
-        ["Enable"] = false,
-    },
+local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 
-    ["Webhook"] = {
-        ["Enable"]            = true,
-        ["URL"]               = "https://discord.com/api/webhooks/1519229641326334022/SaZyY4kjyCd56cEvC1lE7VTNTmai3qCZLYxQUKPAk3ViyFb1IVRKVP52BrAuzErR-RmF",      -- https://discord.com/api/webhooks/...
-        ["Username"]          = "OneClick GAG2",
-        ["OnRarePet"]         = true,    -- ping when a rare pet is tamed
-        ["OnRareSeed"]        = true,    -- ping when Rainbow/Gold seed claimed
-        ["PetMinPrice"]       = 0,       -- only notify pets with BasePrice >= this
-        ["PetRarity"] = {                -- which rarities trigger pet notify
-            ["Common"]    = false,
-            ["Uncommon"]  = false,
-            ["Rare"]      = false,
-            ["Legendary"] = true,
-            ["Mythic"]    = true,
-            ["Super"]     = true,
-            ["Divine"]    = true,
-            ["Prismatic"] = true,
-        },
-        ["ProfileReport"]     = true,   -- send periodic profile summary
-        ["ProfileIntervalMin"]= 1,      -- minutes between profile reports
-    },
+local gui = Instance.new("ScreenGui")
+gui.Name = "TransitionUI"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.Parent = PlayerGui
+
+-- Nền đen
+local black = Instance.new("Frame")
+black.Parent = gui
+black.Size = UDim2.new(1,0,1,0)
+black.BackgroundColor3 = Color3.new(0,0,0)
+black.BackgroundTransparency = 1
+black.BorderSizePixel = 0
+
+-- Chữ chạy
+local text = Instance.new("TextLabel")
+text.Parent = gui
+text.BackgroundTransparency = 1
+text.Size = UDim2.new(0,900,0,45)
+text.AnchorPoint = Vector2.new(0.5,0.5)
+text.Position = UDim2.new(-0.6,0,0.5,0)
+text.Font = Enum.Font.GothamBold
+text.TextSize = 30
+text.TextStrokeTransparency = 0
+text.TextStrokeColor3 = Color3.new(0,0,0)
+text.Visible = false
+
+-- Chữ đổi màu cầu vồng
+task.spawn(function()
+	local hue = 0
+	while true do
+		hue = (hue + 0.005) % 1
+		text.TextColor3 = Color3.fromHSV(hue,1,1)
+		task.wait(0.03)
+	end
+end)
+
+local messages = {
+	"CHUC BAN CHOI GAME VUI VE",
+	"SCRIPT DANG HOAT DONG",
+	"━━━━━━━━━━━━━━━━━━━━",
+	"CREDIT: MINH DEO GAY x AKU BEO",
+	"━━━━━━━━━━━━━━━━━━━━",
+	"CAM ON BAN DA SU DUNG SCRIPT"
 }
-loadstring(game:HttpGet("https://raw.githubusercontent.com/obiiyeuem/vthangsitink/refs/heads/main/OneclickGAG2.lua"))()
+
+while true do
+	-- Fade nền đen
+	TweenService:Create(
+		black,
+		TweenInfo.new(0.5),
+		{BackgroundTransparency = 0}
+	):Play()
+
+	task.wait(0.6)
+
+	text.Visible = true
+
+	for _,msg in ipairs(messages) do
+		text.Text = msg
+		text.Position = UDim2.new(-0.6,0,0.5,0)
+
+		local move = TweenService:Create(
+			text,
+			TweenInfo.new(6,Enum.EasingStyle.Linear),
+			{Position = UDim2.new(1.6,0,0.5,0)}
+		)
+
+		move:Play()
+		move.Completed:Wait()
+		task.wait(0.3)
+	end
+
+	text.Visible = false
+
+	-- Fade về trong suốt
+	TweenService:Create(
+		black,
+		TweenInfo.new(0.5),
+		{BackgroundTransparency = 1}
+	):Play()
+
+	task.wait(300) -- 5 phút
+end
