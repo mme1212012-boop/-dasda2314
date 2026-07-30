@@ -20,30 +20,33 @@ getgenv().Config = {
 
     -- E.g enchant: "Coins", "Diamonds", "Criticals", "Strong Pets", "Lucky Eggs", "Treasure Hunter", "Magnet", "Speed", "Tap Power"
     ["Enchant"] = {
-        ["Slot 1"] = "",
-        ["Slot 2"] = "",
-        ["Slot 3"] = "",
-        ["Slot 4"] = "",
-        ["Slot 5"] = "",
-        ["Slot 6"] = "",
-        ["Slot 7"] = "",
-        ["Slot 8"] = "",
-        ["Slot 9"] = "",
-    }
+    ["Slot 1"] = "Coins",
+    ["Slot 2"] = "Diamonds",
+    ["Slot 3"] = "Treasure Hunter",
+    ["Slot 4"] = "Lucky Eggs",
+    ["Slot 5"] = "Criticals",
+    ["Slot 6"] = "Strong Pets",
+    ["Slot 7"] = "Magnet",
+    ["Slot 8"] = "Speed",
+    ["Slot 9"] = "Tap Power",
+}
 }
 
 getgenv().RankQuestConfig = {
-    ["Legendary Offset"] = -1,    -- Value: 0, -1, -2, -3,e.g:-1 =best egg-1
+    ["Legendary Offset"] = -1,
+
     ["Comet"] = true,
     ["Jar"] = true,
     ["Pinata"] = true,
     ["Lucky"] = true,
     ["Flag"] = true,
     ["Fruit"] = true,
+
     ["Potion"] = true,
     ["Area"] = true,
     ["UpPotion"] = true,
     ["UpEnchant"] = true,
+
     ["Hatch"] = true,
     ["Gold"] = true,
     ["Rainbow"] = true,
