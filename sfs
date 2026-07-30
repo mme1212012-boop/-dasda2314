@@ -65,7 +65,7 @@ loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/4a0cd73a
 
 -- Load script GitHub trước
 pcall(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/mme1212012-boop/-dasda2314/refs/heads/main/sfs"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/mme1212012-boop/-dasda2314/refs/heads/main/gg"))()
 end)
 
 task.wait(5)
