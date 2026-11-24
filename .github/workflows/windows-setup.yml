@@ -19,7 +19,8 @@ jobs:
           node-version: 22
       - uses: dtolnay/rust-toolchain@stable
       - name: Install frontend dependencies
-        run: npm --prefix frontend install --no-audit --no-fund
+        working-directory: frontend
+        run: npm install --no-audit --no-fund
       - name: Install Tauri CLI
         run: cargo install tauri-cli --version "^2.0" --locked
       - name: Build NSIS setup
