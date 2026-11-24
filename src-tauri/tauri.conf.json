@@ -4,13 +4,16 @@
   "version": "0.2.0",
   "identifier": "com.bombombini.gusini",
   "build": {
-    "beforeDevCommand": "npm --prefix ../frontend run dev",
+    "beforeDevCommand": "cd ../frontend && npm run dev",
     "devUrl": "http://127.0.0.1:1420",
-    "beforeBuildCommand": "npm --prefix ../frontend run build",
+    "beforeBuildCommand": "cd ../frontend && npm run build",
     "frontendDist": "../frontend/dist"
   },
   "app": {
     "withGlobalTauri": true,
+    "security": {
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost https: wss: ws://127.0.0.1:1420; img-src 'self' asset: http://asset.localhost data: blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; script-src 'self' 'unsafe-eval'"
+    },
     "windows": [
       {
         "label": "main",
@@ -22,9 +25,6 @@
         "visible": false
       }
     ]
-  },
-  "security": {
-    "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost https: wss: ws://127.0.0.1:1420; img-src 'self' asset: http://asset.localhost data: blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; script-src 'self' 'unsafe-eval'"
   },
   "bundle": {
     "active": true,
