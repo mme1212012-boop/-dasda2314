@@ -1,6 +1,6 @@
 [package]
 name = "bombombini-gusini"
-version = "0.1.0"
+version = "0.2.0"
 description = "Bombombini Gusini desktop chat"
 authors = ["mme1212012-boop"]
 edition = "2021"

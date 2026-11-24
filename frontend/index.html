@@ -5,14 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#111014">
     <meta name="description" content="Bombombini Gusini — chat nhanh, trả lời ngay từ thông báo.">
-    <meta name="app-version" content="0.1.0">
+    <meta name="app-version" content="0.2.0">
     <title>Bombombini Gusini — Sigma Chat</title>
-    <link rel="icon" type="image/png" href="assets/icon.png">
-    <link rel="stylesheet" href="styles.css">
-    <script src="app.js" defer></script>
+    <link rel="icon" type="image/png" href="./assets/icon.png">
+    <link rel="stylesheet" href="./styles.css">
+    <script type="module" src="./app.js"></script>
   </head>
   <body>
-    <main class="app-shell">
+    <main class="auth-screen" id="authScreen">
+      <section class="auth-card" aria-live="polite">
+        <a class="brand auth-brand" href="#" aria-label="Bombombini Gusini">
+          <img class="brand-icon" src="./assets/icon.png" alt="">
+          <span>
+            <strong>Bombombini</strong>
+            <small>GUSINI · ONLINE CHAT</small>
+          </span>
+        </a>
+        <div id="backendSetup">
+          <span class="eyebrow">KẾT NỐI CHAT ONLINE</span>
+          <h1>Kết nối Supabase</h1>
+          <p>Nhập URL project và public anon key. Không dùng service-role key trong ứng dụng.</p>
+          <form id="backendConfigForm" class="auth-form">
+            <label>Project URL
+              <input id="supabaseUrl" type="url" inputmode="url" autocomplete="url" placeholder="https://your-project.supabase.co" required>
+            </label>
+            <label>Public anon key
+              <input id="supabaseAnonKey" type="text" autocomplete="off" spellcheck="false" required>
+            </label>
+            <button class="send-button auth-submit" type="submit">Kết nối <span aria-hidden="true">↗</span></button>
+          </form>
+          <p class="auth-help">Trước tiên, chạy file <code>supabase/schema.sql</code> trong SQL Editor của project.</p>
+        </div>
+        <div id="authPanel" hidden>
+          <span class="eyebrow">TIN NHẮN ĐỒNG BỘ TRỰC TUYẾN</span>
+          <h1 id="authTitle">Đăng nhập</h1>
+          <p id="authSubtitle">Đăng nhập để mở cuộc trò chuyện của bạn.</p>
+          <form id="authForm" class="auth-form">
+            <label id="usernameField" hidden>Tên người dùng
+              <input id="authUsername" type="text" minlength="3" maxlength="24" autocomplete="username" pattern="[A-Za-z0-9_]{3,24}">
+            </label>
+            <label id="displayNameField" hidden>Tên hiển thị
+              <input id="authDisplayName" type="text" maxlength="60" autocomplete="name">
+            </label>
+            <label>Email
+              <input id="authEmail" type="email" autocomplete="email" required>
+            </label>
+            <label>Mật khẩu
+              <input id="authPassword" type="password" minlength="8" autocomplete="current-password" required>
+            </label>
+            <button class="send-button auth-submit" id="authSubmitButton" type="submit">Đăng nhập <span aria-hidden="true">↗</span></button>
+          </form>
+          <button class="auth-link" id="authModeButton" type="button">Tạo tài khoản mới</button>
+          <button class="auth-link" id="changeBackendButton" type="button">Đổi cấu hình máy chủ</button>
+        </div>
+        <p class="auth-error" id="authError" role="alert" hidden></p>
+      </section>
+    </main>
+    <main class="app-shell" id="appShell" hidden>
       <aside class="sidebar" aria-label="Danh sách cuộc trò chuyện">
         <a class="brand" href="#" aria-label="Bombombini Gusini trang chủ">
           <img class="brand-icon" src="assets/icon.png" alt="">
@@ -38,7 +87,8 @@
         <div class="chat-list" id="chatList" role="list"></div>
         <div class="sidebar-footer">
           <span class="online-dot"></span>
-          <span>Chế độ sigma đang bật</span>
+          <span id="accountName">Đã kết nối</span>
+          <button class="sign-out-button" id="signOutButton" type="button">Đăng xuất</button>
           <span class="footer-sparkle" aria-hidden="true">✦</span>
         </div>
       </aside>
@@ -52,12 +102,11 @@
           <div class="contact-summary">
             <div class="avatar avatar-contact" id="headerAvatar" aria-hidden="true">M</div>
             <div>
-              <h2 id="headerName">Minh Anh</h2>
-              <p><span class="online-dot"></span><span id="headerStatus">Đang hoạt động</span></p>
+              <h2 id="headerName">Chọn một cuộc trò chuyện</h2>
+              <p><span class="online-dot"></span><span id="headerStatus">Tin nhắn được đồng bộ trực tuyến</span></p>
             </div>
           </div>
           <div class="header-actions">
-            <button class="icon-button" id="simulateMessageButton" type="button" aria-label="Thử thông báo Windows" title="Thử thông báo Windows">🔔</button>
             <button class="icon-button update-button" id="checkUpdatesButton" type="button" aria-label="Kiểm tra cập nhật" title="Kiểm tra cập nhật">↻</button>
             <button class="icon-button mobile-notification-button" id="notificationButton" type="button" aria-label="Mở thông báo nhanh" aria-controls="notificationCard" aria-expanded="false" title="Thông báo nhanh">🔔</button>
             <button class="icon-button" id="pinButton" type="button" aria-label="Ghim cuộc trò chuyện" title="Ghim cuộc trò chuyện">☆</button>
@@ -124,15 +173,15 @@
           <div class="notification-preview">
             <div class="notification-avatar" id="notificationAvatar">M</div>
             <div class="notification-copy">
-              <strong id="notificationSender">Minh Anh</strong>
-              <span id="notificationMessage">Ê, tối nay chiến game không?</span>
-              <time id="notificationTime">vừa xong</time>
+              <strong id="notificationSender">Chưa có tin nhắn mới</strong>
+              <span id="notificationMessage">Thông báo tin nhắn sẽ xuất hiện tại đây.</span>
+              <time id="notificationTime"></time>
             </div>
           </div>
           <form class="quick-reply" id="quickReplyForm">
             <label class="sr-only" for="quickReplyInput">Trả lời từ thông báo</label>
-            <input id="quickReplyInput" maxlength="300" placeholder="Trả lời ngay tại đây..." required>
-            <button type="submit" aria-label="Gửi trả lời">↗</button>
+            <input id="quickReplyInput" maxlength="500" placeholder="Trả lời ngay tại đây..." required disabled>
+            <button type="submit" aria-label="Gửi trả lời" disabled>↗</button>
           </form>
           <p class="notification-footnote"><span aria-hidden="true">✦</span> Trả lời nhanh ngay trong khung thông báo</p>
         </section>
@@ -145,10 +194,21 @@
           </div>
           <button class="text-button" id="focusTextButton" type="button">Bật tập trung <span aria-hidden="true">→</span></button>
         </section>
-        <p class="demo-note">Bản demo giao diện · Tin nhắn chỉ lưu trong phiên hiện tại</p>
+        <p class="demo-note">Tin nhắn được đồng bộ qua Supabase khi tài khoản trực tuyến.</p>
       </aside>
     </main>
     <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+    <dialog class="settings-dialog" id="newChatDialog" aria-labelledby="newChatTitle">
+      <button class="update-close" id="closeNewChatDialog" type="button" aria-label="Đóng">×</button>
+      <span class="eyebrow">BẮT ĐẦU CUỘC TRÒ CHUYỆN</span>
+      <h2 id="newChatTitle">Tìm người dùng</h2>
+      <p class="settings-intro">Tìm bằng tên người dùng Supabase.</p>
+      <form class="user-search-form" id="userSearchForm">
+        <input id="userSearchInput" type="search" placeholder="Tên người dùng" autocomplete="off" required>
+        <button class="update-again" type="submit">Tìm</button>
+      </form>
+      <div class="user-search-results" id="userSearchResults" aria-live="polite"></div>
+    </dialog>
     <dialog class="update-dialog" id="updateDialog" aria-labelledby="updateTitle">
       <button class="update-close" id="closeUpdateDialog" type="button" aria-label="Đóng">×</button>
       <div class="update-orbit" aria-hidden="true">

@@ -1,19 +1,34 @@
 # Bombombini Gusini
 
-Bombombini Gusini is a Windows desktop chat prototype built with Tauri and Rust. It uses the supplied Gusini artwork for the app icon and offers a Windows toast notification with an inline reply box.
+Bombombini Gusini is an original Windows chat app built with Tauri, Rust, and Supabase. It supports one-to-one conversations, live message sync, file attachments, reactions, and quick replies from Windows notifications.
 
-## Run on Windows
+## Set up Supabase
 
-Install the Rust MSVC toolchain, Microsoft C++ Build Tools, WebView2, and the Tauri CLI (`cargo install tauri-cli --version "^2.0" --locked`). Run the app from the repository root:
+1. Create a Supabase project.
+2. Run `supabase/schema.sql` in the project's SQL Editor. This creates the profile, conversation, message, reaction, and private attachment-storage tables with row-level security.
+3. Start the app and enter the project's URL and public anon key. Never enter a service-role key in the app.
+4. Create an account with an email, password, and username. If email confirmation is enabled in Supabase, verify the email before signing in. Search for another user's username with the **+** button to start a conversation.
+
+The app stores the project URL and public anon key on the local device. Each message and file is sent directly to Supabase using the signed-in user's session and database policies.
+
+## Run and build on Windows
+
+Install Node.js 22, the Rust MSVC toolchain, Microsoft C++ Build Tools, WebView2, and the Tauri CLI:
 
 ```powershell
-cargo run --manifest-path src-tauri/Cargo.toml
+npm --prefix frontend install
+cargo install tauri-cli --version "^2.0" --locked
 ```
 
-Closing the main window hides the app in the Windows system tray; use the tray icon to reopen it or exit. The app starts with Windows by default and opens hidden, and this can be changed in Settings. To build the Windows setup `.exe`, run `Set-Location src-tauri` and then `cargo tauri build`; the NSIS target produces the installer.
+From the repository root, run the app:
 
-Use the bell button in the chat header to trigger a sample Windows notification. Replies submitted from the toast are delivered back to the open app and shown in the matching conversation. The settings dialog can disable notifications, motion effects, or startup with Windows. Use the refresh button to check the latest public GitHub release; a newer release opens its download page.
+```powershell
+Set-Location src-tauri
+cargo tauri dev
+```
 
-The app also includes an animated update-check dialog. Updates are checked against GitHub Releases and downloaded manually; automatic installation is not configured.
+Build the Windows setup `.exe` from the same directory with `cargo tauri build`. The NSIS installer is written to `target\release\bundle\nsis\`.
 
-This is a local prototype without a messaging server. Sample conversations and replies are held in memory; messages are not delivered to other users.
+Closing the main window hides the app in the system tray; use the tray icon to reopen or exit. Startup with Windows is enabled by default and can be changed in Settings. Quick replies work while the app is running, including when hidden in the tray; they are not delivered after the app has been fully exited.
+
+Updates are checked against GitHub Releases and downloaded manually; automatic installation is not configured.
