@@ -1,6 +1,6 @@
 [package]
 name = "bombombini-gusini"
-version = "0.2.0"
+version = "0.3.0"
 description = "Bombombini Gusini desktop chat"
 authors = ["mme1212012-boop"]
 edition = "2021"
@@ -17,6 +17,9 @@ tauri-build = { version = "2" }
 serde = { version = "1", features = ["derive"] }
 tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-autostart = "2"
+tauri-plugin-deep-link = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
 
 [target.'cfg(windows)'.dependencies]
 winrt-toast-reborn = "0.3.8"

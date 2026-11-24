@@ -3,5 +3,10 @@
   "identifier": "default",
   "description": "Default permissions for the Bombombini Gusini desktop window",
   "windows": ["main"],
-  "permissions": ["core:default"]
+  "permissions": [
+    "core:default",
+    "core:event:default",
+    "deep-link:default",
+    "opener:default"
+  ]
 }

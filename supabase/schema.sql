@@ -112,6 +112,8 @@ begin
   ));
   requested_display_name := coalesce(
     nullif(new.raw_user_meta_data ->> 'display_name', ''),
+    nullif(new.raw_user_meta_data ->> 'full_name', ''),
+    nullif(new.raw_user_meta_data ->> 'name', ''),
     requested_username
   );
   insert into public.profiles (id, username, display_name)

@@ -9,6 +9,10 @@ Bombombini Gusini is an original Windows chat app built with Tauri, Rust, and Su
 3. Start the app and enter the project's URL and public anon key. Never enter a service-role key in the app.
 4. Create an account with an email, password, and username. If email confirmation is enabled in Supabase, verify the email before signing in. Search for another user's username with the **+** button to start a conversation.
 
+### Facebook sign-in
+
+In Supabase Authentication, enable the Facebook provider and enter the App ID and App Secret from your Facebook app. In Facebook Login settings, add `https://<project-ref>.supabase.co/auth/v1/callback` as a valid OAuth redirect URI. Add `bombombini://oauth` to Supabase's allowed redirect URLs. Keep the Facebook App Secret in Supabase only; the app opens Facebook sign-in in your browser and returns through the desktop app link.
+
 ### Automatically remove old attachments
 
 The scheduled cleanup removes attachment files and their storage references after one month; message text remains. Deploy the cleanup function with the [Supabase CLI](https://supabase.com/docs/guides/cli):

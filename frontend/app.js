@@ -7,6 +7,8 @@ import {
   postMessage,
   toggleReaction
 } from "./chat-service.js";
+import { getCurrent, onOpenUrl } from "@tauri-apps/plugin-deep-link";
+import { openUrl } from "@tauri-apps/plugin-opener";
 
 const conversations = [];
 
@@ -29,6 +31,7 @@ const elements = {
   authEmail: document.querySelector("#authEmail"),
   authPassword: document.querySelector("#authPassword"),
   authSubmitButton: document.querySelector("#authSubmitButton"),
+  facebookLoginButton: document.querySelector("#facebookLoginButton"),
   authModeButton: document.querySelector("#authModeButton"),
   changeBackendButton: document.querySelector("#changeBackendButton"),
   authError: document.querySelector("#authError"),
@@ -94,6 +97,8 @@ let authMode = "signin";
 let messageChannels = [];
 let membershipChannel = null;
 let authSubscription = null;
+let oauthDeepLinkInitialized = false;
+const handledOAuthCodes = new Set();
 const selectedFiles = [];
 const maxFileSize = 10 * 1024 * 1024;
 const supabaseUrlKey = "supabase-project-url";
@@ -408,6 +413,44 @@ function setAuthMode(mode) {
   elements.authError.hidden = true;
 }
 
+async function handleOAuthRedirect(value) {
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    return;
+  }
+  if (url.protocol !== "bombombini:" || url.hostname !== "oauth") return;
+
+  const providerError = url.searchParams.get("error_description") || url.searchParams.get("error");
+  if (providerError) {
+    showAuthError(`Đăng nhập Facebook thất bại: ${providerError}`);
+    return;
+  }
+
+  const code = url.searchParams.get("code");
+  if (!code || handledOAuthCodes.has(code) || !supabaseClient) return;
+  handledOAuthCodes.add(code);
+  try {
+    const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code);
+    if (error) throw error;
+    if (!data.session) throw new Error("Facebook không trả về phiên đăng nhập.");
+    await activateSession(data.session);
+  } catch (error) {
+    showAuthError(`Đăng nhập Facebook thất bại: ${String(error)}`);
+  }
+}
+
+async function initializeOAuthDeepLinks() {
+  if (oauthDeepLinkInitialized || !window.__TAURI__?.core?.invoke) return;
+  await onOpenUrl((urls) => {
+    for (const url of urls) void handleOAuthRedirect(url);
+  });
+  oauthDeepLinkInitialized = true;
+  const startUrls = await getCurrent();
+  for (const url of startUrls ?? []) await handleOAuthRedirect(url);
+}
+
 async function disconnectRealtime() {
   const channels = messageChannels;
   messageChannels = [];
@@ -520,7 +563,9 @@ async function activateSession(session) {
   currentUser = session.user;
   elements.authScreen.hidden = true;
   elements.appShell.hidden = false;
-  elements.accountName.textContent = `@${session.user.user_metadata?.username || session.user.email}`;
+  elements.accountName.textContent = session.user.user_metadata?.username
+    ? `@${session.user.user_metadata.username}`
+    : session.user.email || session.user.user_metadata?.full_name || "Facebook";
   if (userChanged || conversations.length === 0) await refreshConversations();
   else renderMessages();
 }
@@ -561,6 +606,7 @@ async function configureSupabase(urlValue, keyValue) {
   elements.authPanel.hidden = false;
   setAuthMode("signin");
   await activateSession(data.session);
+  await initializeOAuthDeepLinks();
 }
 
 function jwtRole(key) {
@@ -605,6 +651,33 @@ elements.backendConfigForm.addEventListener("submit", async (event) => {
 
 elements.authModeButton.addEventListener("click", () => {
   setAuthMode(authMode === "signin" ? "signup" : "signin");
+});
+
+elements.facebookLoginButton.addEventListener("click", async () => {
+  elements.authError.hidden = true;
+  elements.facebookLoginButton.disabled = true;
+  try {
+    if (!window.__TAURI__?.core?.invoke) {
+      throw new Error("Đăng nhập Facebook cần chạy trong ứng dụng Bombombini Gusini.");
+    }
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+      provider: "facebook",
+      options: { redirectTo: "bombombini://oauth", skipBrowserRedirect: true }
+    });
+    if (error) throw error;
+    if (!data.url) throw new Error("Supabase không trả về liên kết đăng nhập Facebook.");
+
+    const providerUrl = new URL(data.url);
+    const projectUrl = new URL(localStorage.getItem(supabaseUrlKey));
+    if (providerUrl.origin !== projectUrl.origin) {
+      throw new Error("Supabase trả về liên kết đăng nhập không hợp lệ.");
+    }
+    await openUrl(providerUrl.toString());
+  } catch (error) {
+    showAuthError(String(error));
+  } finally {
+    elements.facebookLoginButton.disabled = false;
+  }
 });
 
 elements.authForm.addEventListener("submit", async (event) => {

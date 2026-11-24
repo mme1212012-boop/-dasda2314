@@ -252,6 +252,12 @@ button { color: inherit; }
 .auth-form input, .user-search-form input { width: 100%; min-width: 0; padding: 11px 12px; border: 1px solid #37323a; border-radius: 10px; outline: 0; background: #100e12; color: var(--text); font-size: 11px; }
 .auth-form input:focus, .user-search-form input:focus { border-color: rgba(255, 113, 72, .7); }
 .auth-submit { justify-content: center; margin-top: 5px; padding: 11px 14px; font-size: 11px; }
+.auth-divider { display: flex; align-items: center; gap: 10px; margin: 15px 0 11px; color: #85808a; font-size: 9px; }
+.auth-divider::before, .auth-divider::after { height: 1px; flex: 1; background: #37323a; content: ""; }
+.facebook-login-button { display: flex; width: 100%; align-items: center; justify-content: center; gap: 9px; padding: 10px 12px; border: 1px solid #4267a9; border-radius: 10px; background: #1877f2; color: #fff; font-size: 11px; font-weight: 700; cursor: pointer; }
+.facebook-login-button:hover { background: #1468d5; }
+.facebook-login-button:disabled { opacity: .6; cursor: wait; }
+.facebook-mark { font: 700 18px Arial, sans-serif; line-height: 1; }
 .auth-help { margin-top: 16px !important; color: #8c8690 !important; font-size: 9px !important; }
 .auth-help code { color: var(--orange-bright); }
 .auth-link { display: block; margin-top: 12px; padding: 3px 0; border: 0; background: transparent; color: var(--orange-bright); font-size: 10px; cursor: pointer; }
