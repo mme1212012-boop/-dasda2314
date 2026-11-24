@@ -1,0 +1,4 @@
+/src-tauri/target/
+/target/
+/frontend/node_modules/
+/frontend/dist/

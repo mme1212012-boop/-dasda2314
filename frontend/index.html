@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#111014">
+    <meta name="description" content="Bombombini Gusini — chat nhanh, trả lời ngay từ thông báo.">
+    <meta name="app-version" content="0.2.0">
+    <title>Bombombini Gusini — Sigma Chat</title>
+    <link rel="icon" type="image/png" href="./assets/icon.png">
+    <link rel="stylesheet" href="./styles.css">
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <main class="auth-screen" id="authScreen">
+      <section class="auth-card" aria-live="polite">
+        <a class="brand auth-brand" href="#" aria-label="Bombombini Gusini">
+          <img class="brand-icon" src="./assets/icon.png" alt="">
+          <span>
+            <strong>Bombombini</strong>
+            <small>GUSINI · ONLINE CHAT</small>
+          </span>
+        </a>
+        <div id="backendSetup">
+          <span class="eyebrow">KẾT NỐI CHAT ONLINE</span>
+          <h1>Kết nối Supabase</h1>
+          <p>Nhập URL project và public anon key. Không dùng service-role key trong ứng dụng.</p>
+          <form id="backendConfigForm" class="auth-form">
+            <label>Project URL
+              <input id="supabaseUrl" type="url" inputmode="url" autocomplete="url" placeholder="https://your-project.supabase.co" required>
+            </label>
+            <label>Public anon key
+              <input id="supabaseAnonKey" type="text" autocomplete="off" spellcheck="false" required>
+            </label>
+            <button class="send-button auth-submit" type="submit">Kết nối <span aria-hidden="true">↗</span></button>
+          </form>
+          <p class="auth-help">Trước tiên, chạy file <code>supabase/schema.sql</code> trong SQL Editor của project.</p>
+        </div>
+        <div id="authPanel" hidden>
+          <span class="eyebrow">TIN NHẮN ĐỒNG BỘ TRỰC TUYẾN</span>
+          <h1 id="authTitle">Đăng nhập</h1>
+          <p id="authSubtitle">Đăng nhập để mở cuộc trò chuyện của bạn.</p>
+          <form id="authForm" class="auth-form">
+            <label id="usernameField" hidden>Tên người dùng
+              <input id="authUsername" type="text" minlength="3" maxlength="24" autocomplete="username" pattern="[A-Za-z0-9_]{3,24}">
+            </label>
+            <label id="displayNameField" hidden>Tên hiển thị
+              <input id="authDisplayName" type="text" maxlength="60" autocomplete="name">
+            </label>
+            <label>Email
+              <input id="authEmail" type="email" autocomplete="email" required>
+            </label>
+            <label>Mật khẩu
+              <input id="authPassword" type="password" minlength="8" autocomplete="current-password" required>
+            </label>
+            <button class="send-button auth-submit" id="authSubmitButton" type="submit">Đăng nhập <span aria-hidden="true">↗</span></button>
+          </form>
+          <div class="auth-divider"><span>hoặc</span></div>
+          <button class="facebook-login-button" id="facebookLoginButton" type="button">
+            <span class="facebook-mark" aria-hidden="true">f</span>
+            Tiếp tục với Facebook
+          </button>
+          <button class="auth-link" id="authModeButton" type="button">Tạo tài khoản mới</button>
+          <button class="auth-link" id="changeBackendButton" type="button">Đổi cấu hình máy chủ</button>
+        </div>
+        <p class="auth-error" id="authError" role="alert" hidden></p>
+      </section>
+    </main>
+    <main class="app-shell" id="appShell" hidden>
+      <aside class="sidebar" aria-label="Danh sách cuộc trò chuyện">
+        <a class="brand" href="#" aria-label="Bombombini Gusini trang chủ">
+          <img class="brand-icon" src="assets/icon.png" alt="">
+          <span>
+            <strong>Bombombini</strong>
+            <small>GUSINI · SIGMA CHAT</small>
+          </span>
+        </a>
+
+        <div class="sidebar-heading">
+          <h1>Tin nhắn</h1>
+          <button class="icon-button" id="newChatButton" type="button" aria-label="Tạo tin nhắn mới" title="Tin nhắn mới">＋</button>
+        </div>
+        <label class="search-box">
+          <span aria-hidden="true">⌕</span>
+          <input id="chatSearch" type="search" placeholder="Tìm cuộc trò chuyện" autocomplete="off">
+          <kbd>⌘ K</kbd>
+        </label>
+        <div class="filter-row" aria-label="Lọc cuộc trò chuyện">
+          <button class="filter-chip is-active" data-filter="all" type="button">Tất cả</button>
+          <button class="filter-chip" data-filter="unread" type="button">Chưa đọc <span class="unread-count" id="unreadCount">2</span></button>
+        </div>
+        <div class="chat-list" id="chatList" role="list"></div>
+        <div class="sidebar-footer">
+          <span class="online-dot"></span>
+          <span id="accountName">Đã kết nối</span>
+          <button class="sign-out-button" id="signOutButton" type="button">Đăng xuất</button>
+          <span class="footer-sparkle" aria-hidden="true">✦</span>
+        </div>
+      </aside>
+
+      <section class="conversation" aria-label="Cuộc trò chuyện">
+        <header class="conversation-header">
+          <a class="mobile-brand" href="#" aria-label="Bombombini Gusini trang chủ">
+            <img src="assets/icon.png" alt="">
+            <span>Bombombini</span>
+          </a>
+          <div class="contact-summary">
+            <div class="avatar avatar-contact" id="headerAvatar" aria-hidden="true">M</div>
+            <div>
+              <h2 id="headerName">Chọn một cuộc trò chuyện</h2>
+              <p><span class="online-dot"></span><span id="headerStatus">Tin nhắn được đồng bộ trực tuyến</span></p>
+            </div>
+          </div>
+          <div class="header-actions">
+            <button class="icon-button update-button" id="checkUpdatesButton" type="button" aria-label="Kiểm tra cập nhật" title="Kiểm tra cập nhật">↻</button>
+            <button class="icon-button mobile-notification-button" id="notificationButton" type="button" aria-label="Mở thông báo nhanh" aria-controls="notificationCard" aria-expanded="false" title="Thông báo nhanh">🔔</button>
+            <button class="icon-button" id="pinButton" type="button" aria-label="Ghim cuộc trò chuyện" title="Ghim cuộc trò chuyện">☆</button>
+            <button class="icon-button" id="focusButton" type="button" aria-label="Bật chế độ tập trung" title="Chế độ tập trung">⛶</button>
+            <button class="icon-button" id="settingsButton" type="button" aria-label="Mở cài đặt" title="Cài đặt">⚙</button>
+          </div>
+        </header>
+
+        <div class="conversation-body">
+          <div class="date-divider"><span>HÔM NAY</span></div>
+          <div class="message-list" id="messageList" aria-live="polite"></div>
+          <div class="typing-indicator" id="typingIndicator" hidden>
+            <span class="typing-dots"><i></i><i></i><i></i></span>
+            <span id="typingName">Minh Anh</span> đang nhập...
+          </div>
+        </div>
+
+        <form class="composer" id="messageForm">
+          <div class="reply-preview" id="replyPreview" hidden>
+            <div class="reply-preview-copy">
+              <strong id="replyPreviewSender"></strong>
+              <span id="replyPreviewText"></span>
+            </div>
+            <button id="clearReplyButton" type="button" aria-label="Hủy trả lời">×</button>
+          </div>
+          <label class="sr-only" for="messageInput">Soạn tin nhắn</label>
+          <div class="attachment-queue" id="attachmentQueue" aria-live="polite" hidden></div>
+          <textarea id="messageInput" maxlength="500" rows="1" placeholder="Nhắn gì đó thật sigma..."></textarea>
+          <div class="composer-tools">
+            <span class="composer-hint">Enter để gửi · Shift + Enter xuống dòng</span>
+            <div class="composer-buttons">
+              <input class="sr-only" id="fileInput" type="file" multiple>
+              <button class="attach-button" id="pickFileButton" type="button" aria-label="Đính kèm tệp" title="Đính kèm tệp">📎</button>
+              <span class="character-count" id="characterCount">0/500</span>
+              <button class="send-button" type="submit">Gửi <span aria-hidden="true">↗</span></button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <aside class="right-panel" aria-label="Tiện ích">
+        <div class="profile-card">
+          <div class="profile-cover"></div>
+          <img class="profile-image" src="assets/icon.png" alt="Gusini, linh vật của Bombombini">
+          <div class="profile-copy">
+            <span class="eyebrow">LINH VẬT CHÍNH THỨC</span>
+            <h2>Bombombini<br>Gusini</h2>
+            <p>Bay cao. Nhắn gọn. Không drama.</p>
+          </div>
+          <div class="profile-stats">
+            <div><strong>100%</strong><span>tập trung</span></div>
+            <div><strong>0</strong><span>năng lượng tiêu cực</span></div>
+          </div>
+        </div>
+
+        <section class="notification-card" id="notificationCard" aria-labelledby="notificationTitle">
+          <div class="section-title">
+            <div>
+              <span class="eyebrow">KHÔNG BỎ LỠ NHỊP</span>
+              <h2 id="notificationTitle">Thông báo nhanh</h2>
+            </div>
+            <span class="notification-live"><i></i> LIVE</span>
+          </div>
+          <div class="notification-preview">
+            <div class="notification-avatar" id="notificationAvatar">M</div>
+            <div class="notification-copy">
+              <strong id="notificationSender">Chưa có tin nhắn mới</strong>
+              <span id="notificationMessage">Thông báo tin nhắn sẽ xuất hiện tại đây.</span>
+              <time id="notificationTime"></time>
+            </div>
+          </div>
+          <form class="quick-reply" id="quickReplyForm">
+            <label class="sr-only" for="quickReplyInput">Trả lời từ thông báo</label>
+            <input id="quickReplyInput" maxlength="500" placeholder="Trả lời ngay tại đây..." required disabled>
+            <button type="submit" aria-label="Gửi trả lời" disabled>↗</button>
+          </form>
+          <p class="notification-footnote"><span aria-hidden="true">✦</span> Trả lời nhanh ngay trong khung thông báo</p>
+        </section>
+
+        <section class="sigma-card">
+          <div class="sigma-icon" aria-hidden="true">✦</div>
+          <div>
+            <h2>Sigma mode</h2>
+            <p>Tập trung vào cuộc trò chuyện. Mọi thứ khác để sau.</p>
+          </div>
+          <button class="text-button" id="focusTextButton" type="button">Bật tập trung <span aria-hidden="true">→</span></button>
+        </section>
+        <p class="demo-note">Tin nhắn được đồng bộ qua Supabase khi tài khoản trực tuyến.</p>
+      </aside>
+    </main>
+    <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+    <dialog class="settings-dialog" id="newChatDialog" aria-labelledby="newChatTitle">
+      <button class="update-close" id="closeNewChatDialog" type="button" aria-label="Đóng">×</button>
+      <span class="eyebrow">BẮT ĐẦU CUỘC TRÒ CHUYỆN</span>
+      <h2 id="newChatTitle">Tìm người dùng</h2>
+      <p class="settings-intro">Tìm bằng tên người dùng Supabase.</p>
+      <form class="user-search-form" id="userSearchForm">
+        <input id="userSearchInput" type="search" placeholder="Tên người dùng" autocomplete="off" required>
+        <button class="update-again" type="submit">Tìm</button>
+      </form>
+      <div class="user-search-results" id="userSearchResults" aria-live="polite"></div>
+    </dialog>
+    <dialog class="update-dialog" id="updateDialog" aria-labelledby="updateTitle">
+      <button class="update-close" id="closeUpdateDialog" type="button" aria-label="Đóng">×</button>
+      <div class="update-orbit" aria-hidden="true">
+        <span class="orbit-ring"></span>
+        <span class="orbit-core">✦</span>
+      </div>
+      <span class="eyebrow">GUSINI SYSTEM CHECK</span>
+      <h2 id="updateTitle">Đang kiểm tra bản cập nhật</h2>
+      <p id="updateMessage">Đang kết nối với Bombombini HQ...</p>
+      <a class="release-link" id="releaseLink" hidden target="_blank" rel="noopener noreferrer">Xem bản cập nhật <span aria-hidden="true">↗</span></a>
+      <button class="update-again" id="checkAgainButton" type="button">Kiểm tra lại</button>
+    </dialog>
+    <dialog class="settings-dialog" id="settingsDialog" aria-labelledby="settingsTitle">
+      <button class="update-close" id="closeSettingsDialog" type="button" aria-label="Đóng">×</button>
+      <span class="eyebrow">GUSINI CONTROL ROOM</span>
+      <h2 id="settingsTitle">Cài đặt</h2>
+      <p class="settings-intro">Tùy chỉnh thông báo và hiệu ứng của Bombombini Gusini.</p>
+      <label class="setting-row">
+        <span class="setting-copy">
+          <strong>Thông báo Windows</strong>
+          <small>Cho phép trả lời nhanh ngay trên thông báo.</small>
+        </span>
+        <input id="notificationsSetting" type="checkbox">
+      </label>
+      <label class="setting-row">
+        <span class="setting-copy">
+          <strong>Hiệu ứng chuyển động</strong>
+          <small>Bật hoạt ảnh cho tin nhắn và cửa sổ.</small>
+        </span>
+        <input id="animationsSetting" type="checkbox">
+      </label>
+      <label class="setting-row">
+        <span class="setting-copy">
+          <strong>Khởi động cùng Windows</strong>
+          <small>Mở ứng dụng ẩn dưới khay hệ thống khi bạn đăng nhập.</small>
+        </span>
+        <input id="autostartSetting" type="checkbox">
+      </label>
+      <button class="update-again settings-done" id="closeSettingsButton" type="button">Xong</button>
+    </dialog>
+  </body>
+</html>
