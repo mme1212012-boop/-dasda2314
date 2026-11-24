@@ -1,5 +1,6 @@
 use serde::Serialize;
-use tauri::Emitter;
+use tauri::{Emitter, Manager};
+use tauri_plugin_autostart::ManagerExt as AutostartManagerExt;
 
 const APP_NAME: &str = "Bombombini Gusini";
 const APP_USER_MODEL_ID: &str = "com.bombombini.gusini";
@@ -78,10 +79,91 @@ fn show_message_notification(
     }
 }
 
+#[tauri::command]
+fn is_autostart_enabled(app: tauri::AppHandle) -> Result<bool, String> {
+    app.autolaunch()
+        .is_enabled()
+        .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+fn set_autostart_enabled(app: tauri::AppHandle, enabled: bool) -> Result<(), String> {
+    let manager = app.autolaunch();
+    let result = if enabled {
+        manager.enable()
+    } else {
+        manager.disable()
+    };
+    result.map_err(|error| error.to_string())
+}
+
+fn show_main_window(app: &tauri::AppHandle) -> Result<(), String> {
+    let window = app
+        .get_webview_window("main")
+        .ok_or_else(|| "Không tìm thấy cửa sổ chính.".to_owned())?;
+    window.show().map_err(|error| error.to_string())?;
+    window.set_focus().map_err(|error| error.to_string())
+}
+
+fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
+    use tauri::menu::{Menu, MenuItem};
+    use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+
+    let show_item =
+        MenuItem::with_id(app, "show", "Mở Bombombini Gusini", true, None::<&str>)?;
+    let quit_item = MenuItem::with_id(app, "quit", "Thoát", true, None::<&str>)?;
+    let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
+    let icon = app.default_window_icon().cloned().ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "Biểu tượng ứng dụng chưa được cấu hình.",
+        )
+    })?;
+
+    TrayIconBuilder::new()
+        .icon(icon)
+        .tooltip(APP_NAME)
+        .menu(&menu)
+        .show_menu_on_left_click(false)
+        .on_menu_event(|app, event| match event.id().as_ref() {
+            "show" => {
+                if let Err(error) = show_main_window(app) {
+                    eprintln!("Could not show the main window: {error}");
+                }
+            }
+            "quit" => app.exit(0),
+            _ => {}
+        })
+        .on_tray_icon_event(|tray, event| {
+            if let TrayIconEvent::Click {
+                button: MouseButton::Left,
+                button_state: MouseButtonState::Up,
+                ..
+            } = event
+            {
+                if let Err(error) = show_main_window(tray.app_handle()) {
+                    eprintln!("Could not show the main window: {error}");
+                }
+            }
+        })
+        .build(app)?;
+
+    Ok(())
+}
+
 pub fn run() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![show_message_notification])
-        .setup(|_| {
+        .plugin(
+            tauri_plugin_autostart::Builder::new()
+                .args(["--background"])
+                .build(),
+        )
+        .invoke_handler(tauri::generate_handler![
+            show_message_notification,
+            is_autostart_enabled,
+            set_autostart_enabled
+        ])
+        .setup(|app| {
             #[cfg(windows)]
             {
                 let executable = std::env::current_exe()?;
@@ -91,7 +173,22 @@ pub fn run() {
                     Some(executable.as_path()),
                 )?;
             }
+
+            setup_tray(app)?;
+            let started_in_background = std::env::args().any(|arg| arg == "--background");
+            if !started_in_background {
+                show_main_window(&app.handle())
+                    .map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))?;
+            }
             Ok(())
+        })
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                if let Err(error) = window.hide() {
+                    eprintln!("Could not hide the main window: {error}");
+                }
+            }
         })
         .run(tauri::generate_context!())
         .expect("error while running Bombombini Gusini");

@@ -92,6 +92,7 @@ const elements = {
   settingsDialog: document.querySelector("#settingsDialog"),
   notificationsSetting: document.querySelector("#notificationsSetting"),
   animationsSetting: document.querySelector("#animationsSetting"),
+  autostartSetting: document.querySelector("#autostartSetting"),
   toastRegion: document.querySelector("#toastRegion"),
   typingIndicator: document.querySelector("#typingIndicator"),
   typingName: document.querySelector("#typingName")
@@ -107,7 +108,8 @@ const maxFileSize = 10 * 1024 * 1024;
 const latestReleaseUrl = "https://api.github.com/repos/mme1212012-boop/-dasda2314/releases/latest";
 const settings = {
   notifications: readSetting("notifications-enabled", true),
-  animations: readSetting("animations-enabled", true)
+  animations: readSetting("animations-enabled", true),
+  autostart: readSetting("autostart-enabled", true)
 };
 
 function readSetting(key, defaultValue) {
@@ -549,6 +551,7 @@ document.querySelector("#closeUpdateDialog").addEventListener("click", () => ele
 elements.settingsButton.addEventListener("click", () => {
   elements.notificationsSetting.checked = settings.notifications;
   elements.animationsSetting.checked = settings.animations;
+  elements.autostartSetting.checked = settings.autostart;
   elements.settingsDialog.showModal();
 });
 document.querySelector("#closeSettingsDialog").addEventListener("click", () => elements.settingsDialog.close());
@@ -561,6 +564,25 @@ elements.animationsSetting.addEventListener("change", () => {
   settings.animations = elements.animationsSetting.checked;
   document.body.classList.toggle("reduce-effects", !settings.animations);
   saveSetting("animations-enabled", settings.animations);
+});
+elements.autostartSetting.addEventListener("change", async () => {
+  const previousValue = settings.autostart;
+  const nextValue = elements.autostartSetting.checked;
+  const invoke = window.__TAURI__?.core?.invoke;
+  if (!invoke) {
+    elements.autostartSetting.checked = previousValue;
+    showToast("Cần chạy ứng dụng desktop", "Cài đặt khởi động chỉ có trong bản Windows.");
+    return;
+  }
+
+  try {
+    await invoke("set_autostart_enabled", { enabled: nextValue });
+    settings.autostart = nextValue;
+    saveSetting("autostart-enabled", nextValue);
+  } catch (error) {
+    elements.autostartSetting.checked = previousValue;
+    showToast("Không đổi được cài đặt khởi động", String(error));
+  }
 });
 document.body.classList.toggle("reduce-effects", !settings.animations);
 
@@ -642,3 +664,19 @@ document.addEventListener("keydown", (event) => {
 updateNotification(conversations[0], conversations[0].messages.at(-1));
 renderMessages();
 listenForNotificationReplies();
+
+async function syncAutostartSetting() {
+  const invoke = window.__TAURI__?.core?.invoke;
+  if (!invoke) return;
+
+  try {
+    const enabled = await invoke("is_autostart_enabled");
+    if (enabled !== settings.autostart) {
+      await invoke("set_autostart_enabled", { enabled: settings.autostart });
+    }
+  } catch (error) {
+    showToast("Không đồng bộ được cài đặt khởi động", String(error));
+  }
+}
+
+syncAutostartSetting();
