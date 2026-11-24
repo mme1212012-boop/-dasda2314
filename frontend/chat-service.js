@@ -74,6 +74,7 @@ export async function loadMessages(client, conversationIds, userId) {
 
 async function mapMessage(client, row, userId, reactionUsers = []) {
   const attachments = await Promise.all((row.attachments ?? []).map(async (attachment) => {
+    if (attachment.expired) return { ...attachment, url: null };
     const { data, error } = await client.storage
       .from(attachmentBucket)
       .createSignedUrl(attachment.path, 3600);

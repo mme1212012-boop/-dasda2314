@@ -259,6 +259,13 @@ function renderMessages() {
     }
 
     for (const attachment of message.attachments ?? []) {
+      if (attachment.expired) {
+        const expired = document.createElement("div");
+        expired.className = "file-attachment file-attachment-expired";
+        expired.textContent = `${attachment.name} · Tệp đã hết hạn sau 1 tháng`;
+        stack.append(expired);
+        continue;
+      }
       const link = document.createElement("a");
       link.className = "file-attachment";
       link.href = attachment.url;

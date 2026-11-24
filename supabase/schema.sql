@@ -91,6 +91,8 @@ create index if not exists conversation_members_user_id_idx
   on public.conversation_members (user_id, conversation_id);
 create index if not exists messages_conversation_created_idx
   on public.messages (conversation_id, created_at);
+create index if not exists messages_created_at_idx
+  on public.messages (created_at);
 create index if not exists message_reactions_conversation_idx
   on public.message_reactions (conversation_id, message_id);
 
@@ -127,6 +129,82 @@ drop trigger if exists validate_message_attachments on public.messages;
 create trigger validate_message_attachments
   before insert on public.messages
   for each row execute procedure public.validate_message_attachments();
+
+create or replace function public.mark_expired_attachments()
+returns table (path text)
+language sql
+security definer
+set search_path = ''
+as $$
+  with candidates as (
+    select message.id
+    from public.messages message
+    where message.created_at < now() - interval '1 month'
+      and exists (
+        select 1
+        from jsonb_array_elements(message.attachments) attachment(value)
+        where attachment.value ? 'path'
+      )
+    order by message.created_at
+    limit 500
+    for update skip locked
+  ),
+  updated as (
+    update public.messages message
+    set attachments = (
+      select jsonb_agg(
+        case
+          when attachment.value ? 'path'
+            then attachment.value || '{"expired": true}'::jsonb
+          else attachment.value
+        end
+        order by attachment.ordinality
+      )
+      from jsonb_array_elements(message.attachments)
+        with ordinality as attachment(value, ordinality)
+    )
+    from candidates
+    where message.id = candidates.id
+    returning message.attachments
+  )
+  select distinct attachment.value ->> 'path'
+  from updated
+  cross join lateral jsonb_array_elements(updated.attachments) attachment(value)
+  where attachment.value ? 'path'
+    and attachment.value ->> 'expired' = 'true';
+$$;
+
+create or replace function public.finalize_expired_attachments(deleted_paths text[])
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  update public.messages message
+  set attachments = (
+    select jsonb_agg(
+      case
+        when attachment.value ->> 'path' = any(deleted_paths)
+          and attachment.value ->> 'expired' = 'true'
+          then attachment.value - 'path'
+        else attachment.value
+      end
+      order by attachment.ordinality
+    )
+    from jsonb_array_elements(message.attachments)
+      with ordinality as attachment(value, ordinality)
+  )
+  where exists (
+    select 1
+    from jsonb_array_elements(message.attachments) attachment(value)
+    where attachment.value ->> 'path' = any(deleted_paths)
+      and attachment.value ->> 'expired' = 'true'
+  );
+$$;
+revoke all on function public.mark_expired_attachments() from public, anon, authenticated;
+revoke all on function public.finalize_expired_attachments(text[]) from public, anon, authenticated;
+grant execute on function public.mark_expired_attachments() to service_role;
+grant execute on function public.finalize_expired_attachments(text[]) to service_role;
 
 insert into public.profiles (id, username, display_name)
 select users.id,
