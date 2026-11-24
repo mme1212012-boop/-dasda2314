@@ -1,18 +1,17 @@
 # Bombombini Gusini
 
-Bombombini Gusini is an original, static web chat prototype with a dark, warm-toned interface and the supplied Gusini artwork.
+Bombombini Gusini is a Windows desktop chat prototype built with Tauri and Rust. It uses the supplied Gusini artwork for the app icon and offers a Windows toast notification with an inline reply box.
 
-## Run locally
+## Run on Windows
 
-Open `index.html` in a browser, or serve this folder with any static file server. No build step or package install is required.
+Install the Rust MSVC toolchain, Microsoft C++ Build Tools, and WebView2, then run from the repository root:
 
-## Features
+```powershell
+cargo run --manifest-path src-tauri/Cargo.toml
+```
 
-- Quick replies from the in-app notification card
-- Send multiple files up to 10 MB each, with downloadable attachment cards
-- Search conversations and pin a chat
-- Quote-reply to a specific message, message reactions, and focus mode
-- Filter unread conversations with a live unread count
-- Responsive layout for desktop and mobile
+Use the bell button in the chat header to trigger a sample Windows notification. Replies submitted from the toast are delivered back to the open app and shown in the matching conversation. The settings dialog can disable notifications or motion effects. Use the refresh button to check the latest public GitHub release; a newer release opens its download page.
 
-This is a front-end demo: messages and file attachments are held in memory and disappear when the page is reloaded; files are available as local downloads, not uploaded to a server. Browser web notifications do not provide a portable inline-reply action, so quick reply is implemented in the in-app notification card.
+The app also includes an animated update-check dialog. Updates are checked against GitHub Releases and downloaded manually; automatic installation is not configured.
+
+This is a local prototype without a messaging server. Sample conversations and replies are held in memory; messages are not delivered to other users.

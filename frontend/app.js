@@ -82,6 +82,16 @@ const elements = {
   focusButton: document.querySelector("#focusButton"),
   focusTextButton: document.querySelector("#focusTextButton"),
   notificationButton: document.querySelector("#notificationButton"),
+  checkUpdatesButton: document.querySelector("#checkUpdatesButton"),
+  updateDialog: document.querySelector("#updateDialog"),
+  updateTitle: document.querySelector("#updateTitle"),
+  updateMessage: document.querySelector("#updateMessage"),
+  releaseLink: document.querySelector("#releaseLink"),
+  checkAgainButton: document.querySelector("#checkAgainButton"),
+  settingsButton: document.querySelector("#settingsButton"),
+  settingsDialog: document.querySelector("#settingsDialog"),
+  notificationsSetting: document.querySelector("#notificationsSetting"),
+  animationsSetting: document.querySelector("#animationsSetting"),
   toastRegion: document.querySelector("#toastRegion"),
   typingIndicator: document.querySelector("#typingIndicator"),
   typingName: document.querySelector("#typingName")
@@ -94,6 +104,21 @@ let unreadOnly = false;
 let toastTimer;
 const selectedFiles = [];
 const maxFileSize = 10 * 1024 * 1024;
+const latestReleaseUrl = "https://api.github.com/repos/mme1212012-boop/-dasda2314/releases/latest";
+const settings = {
+  notifications: readSetting("notifications-enabled", true),
+  animations: readSetting("animations-enabled", true)
+};
+
+function readSetting(key, defaultValue) {
+  try {
+    const stored = localStorage.getItem(key);
+    return stored === null ? defaultValue : stored === "true";
+  } catch (error) {
+    showToast("Không đọc được cài đặt", String(error));
+    return defaultValue;
+  }
+}
 
 function activeConversation() {
   return conversations.find((conversation) => conversation.id === activeConversationId);
@@ -298,6 +323,14 @@ function showToast(title, text) {
   toastTimer = window.setTimeout(() => elements.toastRegion.replaceChildren(), 3600);
 }
 
+function saveSetting(key, value) {
+  try {
+    localStorage.setItem(key, String(value));
+  } catch (error) {
+    showToast("Không lưu được cài đặt", String(error));
+  }
+}
+
 function currentTime() {
   return new Intl.DateTimeFormat("vi-VN", { hour: "2-digit", minute: "2-digit" }).format(new Date());
 }
@@ -435,10 +468,106 @@ elements.notificationButton.addEventListener("click", () => {
   elements.notificationButton.setAttribute("aria-expanded", String(isOpen));
 });
 
+function compareVersions(left, right) {
+  const parse = (version) => {
+    const match = /^v?(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/.exec(version);
+    return match ? match.slice(1).map(Number) : null;
+  };
+  const latest = parse(left);
+  const current = parse(right);
+  if (!latest || !current) throw new Error("Phiên bản phát hành không đúng định dạng.");
+  for (let index = 0; index < latest.length; index += 1) {
+    if (latest[index] !== current[index]) return latest[index] > current[index] ? 1 : -1;
+  }
+  return 0;
+}
+
+async function currentAppVersion() {
+  const getVersion = window.__TAURI__?.app?.getVersion;
+  return getVersion
+    ? getVersion()
+    : document.querySelector('meta[name="app-version"]')?.content ?? "0.1.0";
+}
+
+async function checkForUpdates() {
+  if (elements.checkUpdatesButton.disabled) return;
+  elements.updateDialog.showModal();
+  elements.updateDialog.dataset.state = "checking";
+  elements.updateTitle.textContent = "Đang kiểm tra bản cập nhật";
+  elements.updateMessage.textContent = "Đang kết nối với Bombombini HQ...";
+  elements.releaseLink.hidden = true;
+  elements.checkAgainButton.hidden = true;
+  elements.checkUpdatesButton.disabled = true;
+  elements.checkUpdatesButton.classList.add("is-checking");
+
+  try {
+    const response = await fetch(latestReleaseUrl, {
+      headers: { Accept: "application/vnd.github+json" }
+    });
+    if (response.status === 404) {
+      elements.updateDialog.dataset.state = "current";
+      elements.updateTitle.textContent = "Chưa có bản phát hành";
+      elements.updateMessage.textContent = "Hiện chưa có bản cập nhật công khai để tải.";
+      return;
+    }
+    if (!response.ok) throw new Error(`GitHub trả về lỗi ${response.status}.`);
+
+    const release = await response.json();
+    const latestVersion = release.tag_name;
+    const version = await currentAppVersion();
+    const comparison = compareVersions(latestVersion, version);
+    elements.updateDialog.dataset.state = comparison > 0 ? "available" : "current";
+
+    if (comparison > 0) {
+      const releaseUrl = new URL(release.html_url);
+      if (releaseUrl.origin !== "https://github.com") {
+        throw new Error("Liên kết cập nhật không hợp lệ.");
+      }
+      elements.updateTitle.textContent = `Có phiên bản ${latestVersion}`;
+      elements.updateMessage.textContent = `Bạn đang dùng ${version}. Mở trang phát hành để xem ghi chú và tải bản mới.`;
+      elements.releaseLink.href = releaseUrl.href;
+      elements.releaseLink.hidden = false;
+    } else {
+      elements.updateTitle.textContent = "Bạn đang dùng bản mới nhất";
+      elements.updateMessage.textContent = `Phiên bản hiện tại: ${version}. Gusini đã được cập nhật!`;
+    }
+  } catch (error) {
+    elements.updateDialog.dataset.state = "error";
+    elements.updateTitle.textContent = "Không kiểm tra được";
+    elements.updateMessage.textContent = String(error);
+  } finally {
+    elements.checkAgainButton.hidden = false;
+    elements.checkUpdatesButton.disabled = false;
+    elements.checkUpdatesButton.classList.remove("is-checking");
+  }
+}
+
+elements.checkUpdatesButton.addEventListener("click", checkForUpdates);
+elements.checkAgainButton.addEventListener("click", checkForUpdates);
+document.querySelector("#closeUpdateDialog").addEventListener("click", () => elements.updateDialog.close());
+
+elements.settingsButton.addEventListener("click", () => {
+  elements.notificationsSetting.checked = settings.notifications;
+  elements.animationsSetting.checked = settings.animations;
+  elements.settingsDialog.showModal();
+});
+document.querySelector("#closeSettingsDialog").addEventListener("click", () => elements.settingsDialog.close());
+document.querySelector("#closeSettingsButton").addEventListener("click", () => elements.settingsDialog.close());
+elements.notificationsSetting.addEventListener("change", () => {
+  settings.notifications = elements.notificationsSetting.checked;
+  saveSetting("notifications-enabled", settings.notifications);
+});
+elements.animationsSetting.addEventListener("change", () => {
+  settings.animations = elements.animationsSetting.checked;
+  document.body.classList.toggle("reduce-effects", !settings.animations);
+  saveSetting("animations-enabled", settings.animations);
+});
+document.body.classList.toggle("reduce-effects", !settings.animations);
+
 document.querySelector("#simulateMessageButton").addEventListener("click", () => {
   const conversation = activeConversation();
   const message = {
-    text: "Tin nhắn mới đây — trả lời ngay từ thẻ thông báo nhé! ✨",
+    text: "Tin nhắn thử — bạn có thể trả lời ngay trong thông báo Windows.",
     time: currentTime(),
     mine: false
   };
@@ -446,12 +575,43 @@ document.querySelector("#simulateMessageButton").addEventListener("click", () =>
   conversation.unread = true;
   updateNotification(conversation, message);
   renderMessages();
-  showToast(`Tin nhắn mới · ${conversation.name}`, message.text);
-  if (window.matchMedia("(max-width: 700px)").matches) {
-    document.body.classList.add("show-notification");
-    elements.notificationButton.setAttribute("aria-expanded", "true");
+  if (!settings.notifications) {
+    showToast("Thông báo đã tắt", "Tin nhắn mẫu vẫn được thêm vào cuộc trò chuyện.");
+    return;
   }
+  const invoke = window.__TAURI__?.core?.invoke;
+  if (!invoke) {
+    showToast("Cần chạy ứng dụng desktop", "Thông báo trả lời nhanh chỉ có trong bản Windows.");
+    return;
+  }
+  invoke("show_message_notification", {
+    conversationId: conversation.id,
+    sender: conversation.name,
+    message: message.text
+  }).then(() => {
+    showToast("Đã gửi thông báo Windows", "Thử trả lời trực tiếp trong thông báo.");
+  }).catch((error) => {
+    showToast("Không gửi được thông báo", String(error));
+  });
 });
+
+async function listenForNotificationReplies() {
+  const listen = window.__TAURI__?.event?.listen;
+  if (!listen) return;
+
+  try {
+    await listen("notification-reply", ({ payload }) => {
+      const conversation = conversations.find((item) => item.id === payload.conversationId);
+      if (!conversation || !sendMessage(conversation.id, payload.text)) {
+        showToast("Không thể gửi trả lời", "Cuộc trò chuyện hoặc nội dung không hợp lệ.");
+        return;
+      }
+      showToast("Đã trả lời từ thông báo", payload.text);
+    });
+  } catch (error) {
+    showToast("Không nhận được câu trả lời", String(error));
+  }
+}
 
 document.querySelector("#newChatButton").addEventListener("click", () => {
   elements.chatSearch.focus();
@@ -481,3 +641,4 @@ document.addEventListener("keydown", (event) => {
 
 updateNotification(conversations[0], conversations[0].messages.at(-1));
 renderMessages();
+listenForNotificationReplies();

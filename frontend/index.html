@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#111014">
     <meta name="description" content="Bombombini Gusini — chat nhanh, trả lời ngay từ thông báo.">
+    <meta name="app-version" content="0.1.0">
     <title>Bombombini Gusini — Sigma Chat</title>
     <link rel="icon" type="image/png" href="assets/icon.png">
     <link rel="stylesheet" href="styles.css">
@@ -56,10 +57,12 @@
             </div>
           </div>
           <div class="header-actions">
-            <button class="icon-button" id="simulateMessageButton" type="button" aria-label="Mô phỏng tin nhắn mới" title="Mô phỏng tin nhắn mới">↙</button>
+            <button class="icon-button" id="simulateMessageButton" type="button" aria-label="Thử thông báo Windows" title="Thử thông báo Windows">🔔</button>
+            <button class="icon-button update-button" id="checkUpdatesButton" type="button" aria-label="Kiểm tra cập nhật" title="Kiểm tra cập nhật">↻</button>
             <button class="icon-button mobile-notification-button" id="notificationButton" type="button" aria-label="Mở thông báo nhanh" aria-controls="notificationCard" aria-expanded="false" title="Thông báo nhanh">🔔</button>
             <button class="icon-button" id="pinButton" type="button" aria-label="Ghim cuộc trò chuyện" title="Ghim cuộc trò chuyện">☆</button>
             <button class="icon-button" id="focusButton" type="button" aria-label="Bật chế độ tập trung" title="Chế độ tập trung">⛶</button>
+            <button class="icon-button" id="settingsButton" type="button" aria-label="Mở cài đặt" title="Cài đặt">⚙</button>
           </div>
         </header>
 
@@ -146,5 +149,38 @@
       </aside>
     </main>
     <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+    <dialog class="update-dialog" id="updateDialog" aria-labelledby="updateTitle">
+      <button class="update-close" id="closeUpdateDialog" type="button" aria-label="Đóng">×</button>
+      <div class="update-orbit" aria-hidden="true">
+        <span class="orbit-ring"></span>
+        <span class="orbit-core">✦</span>
+      </div>
+      <span class="eyebrow">GUSINI SYSTEM CHECK</span>
+      <h2 id="updateTitle">Đang kiểm tra bản cập nhật</h2>
+      <p id="updateMessage">Đang kết nối với Bombombini HQ...</p>
+      <a class="release-link" id="releaseLink" hidden target="_blank" rel="noopener noreferrer">Xem bản cập nhật <span aria-hidden="true">↗</span></a>
+      <button class="update-again" id="checkAgainButton" type="button">Kiểm tra lại</button>
+    </dialog>
+    <dialog class="settings-dialog" id="settingsDialog" aria-labelledby="settingsTitle">
+      <button class="update-close" id="closeSettingsDialog" type="button" aria-label="Đóng">×</button>
+      <span class="eyebrow">GUSINI CONTROL ROOM</span>
+      <h2 id="settingsTitle">Cài đặt</h2>
+      <p class="settings-intro">Tùy chỉnh thông báo và hiệu ứng của Bombombini Gusini.</p>
+      <label class="setting-row">
+        <span class="setting-copy">
+          <strong>Thông báo Windows</strong>
+          <small>Cho phép trả lời nhanh ngay trên thông báo.</small>
+        </span>
+        <input id="notificationsSetting" type="checkbox">
+      </label>
+      <label class="setting-row">
+        <span class="setting-copy">
+          <strong>Hiệu ứng chuyển động</strong>
+          <small>Bật hoạt ảnh cho tin nhắn và cửa sổ.</small>
+        </span>
+        <input id="animationsSetting" type="checkbox">
+      </label>
+      <button class="update-again settings-done" id="closeSettingsButton" type="button">Xong</button>
+    </dialog>
   </body>
 </html>
